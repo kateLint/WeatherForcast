@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -45,6 +46,8 @@ import com.compose.weatherforcast.R
 import com.compose.weatherforcast.data.DataOrException
 import com.compose.weatherforcast.model.Weather
 import com.compose.weatherforcast.model.WeatherItem
+import com.compose.weatherforcast.navigation.WeatherScreens
+import com.compose.weatherforcast.screens.settings.SettingsViewModel
 import com.compose.weatherforcast.utils.formatDate
 import com.compose.weatherforcast.utils.formatDecimals
 import com.compose.weatherforcast.widgets.HumidityWindPressureRow
@@ -54,23 +57,39 @@ import com.compose.weatherforcast.widgets.WeatherDetailRow
 import com.compose.weatherforcast.widgets.WeatherStateImage
 
 @Composable
-fun MainScreen(navController: NavController, mainViewModel: MainViewModel = hiltViewModel()){
+fun MainScreen(navController: NavController, mainViewModel: MainViewModel = hiltViewModel(),
+               settingsViewModel: SettingsViewModel = hiltViewModel(),
+               city: String?){
+
+    val curCity: String = if (city?.isBlank() == true) "Seattle" else city.toString()
+
+    val unitFromDb = settingsViewModel.unitList.collectAsState().value
+    var unit by remember {
+        mutableStateOf("imperial")
+    }
 
     var isImperial by remember {
         mutableStateOf(false)
     }
 
-    val weatherData = produceState<DataOrException<Weather, Boolean, Exception>>(
-        initialValue = DataOrException(loading = true)
-    ){
-        value = mainViewModel.getWeatherData(city = "Seattle", "")
-    }.value
+    if (!unitFromDb.isNullOrEmpty()) {
+        unit = unitFromDb[0].unit.split(" ")[0].lowercase()
+        isImperial = unit == "imperial"
 
-    if(weatherData.loading == true){
-        CircularProgressIndicator()
-    }else if(weatherData.data != null){
-       MainScaffold(weather = weatherData.data!!, navController,
-           isImperial = isImperial)
+        val weatherData = produceState<DataOrException<Weather, Boolean, Exception>>(
+            initialValue = DataOrException(loading = true)
+        ) {
+            value = mainViewModel.getWeatherData(city = city.toString(), "")
+        }.value
+
+        if (weatherData.loading == true) {
+            CircularProgressIndicator()
+        } else if (weatherData.data != null) {
+            MainScaffold(
+                weather = weatherData.data!!, navController,
+                isImperial = isImperial
+            )
+        }
     }
 
 }
@@ -81,8 +100,10 @@ fun MainScreen(navController: NavController, mainViewModel: MainViewModel = hilt
 fun MainScaffold(  weather: Weather, navController: NavController, isImperial: Boolean) {
     Scaffold( topBar = {
         Surface(shadowElevation = 5.dp) {
-            WeatherAppBar(navController = navController, title = weather.city.name + ", ${weather.city.country}",
-                icon = Icons.Default.ArrowBack,
+            WeatherAppBar(navController = navController,
+                onAddActionClicked = {
+                    navController.navigate(WeatherScreens.SearchScreen.name)
+                }, title = weather.city.name + ", ${weather.city.country}",
                 elevation = 5.dp){
                 Log.d("TAG", "MainScaffold: Button Cliked")
 
@@ -117,17 +138,17 @@ fun MainContent(modifier: Modifier, data: Weather, isImperial: Boolean) {
             Surface(modifier = Modifier
                 .padding(4.dp)
                 .size(200.dp), shape = CircleShape,
-                color =  Color(0xFFEEF1EF)
+                 color = Color(0xFFFFC107)
             ) {
 
                 Column(verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally) {
 
                     WeatherStateImage(imageUrl = imageUrl)
-                    Text(text = formatDecimals(data.list[0].temp.day) + "F", style = MaterialTheme.typography.displayMedium,
+                    Text(text = formatDecimals(weatherItem.temp.day) + "F", style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.ExtraBold
                     )
-                    Text(text = data.list[0].weather[0].main, fontStyle = FontStyle.Italic)
+                    Text(text = weatherItem.weather[0].main, fontStyle = FontStyle.Italic)
                 }
             }
             HumidityWindPressureRow(weather = data.list[0], isImperial)

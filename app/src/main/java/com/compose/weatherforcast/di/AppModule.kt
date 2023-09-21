@@ -1,10 +1,15 @@
 package com.compose.weatherforcast.di
 
+import android.content.Context
+import androidx.room.Room
+import com.compose.weatherforcast.data.WeatherDao
+import com.compose.weatherforcast.data.WeatherDatabase
 import com.compose.weatherforcast.network.WeatherApi
 import com.compose.weatherforcast.utils.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -14,7 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class AppModule {
 
-/*    @Singleton
+    @Singleton
     @Provides
     fun provideWeatherDao(weatherDatabase: WeatherDatabase): WeatherDao
             = weatherDatabase.weatherDao()
@@ -27,7 +32,7 @@ class AppModule {
         WeatherDatabase::class.java,
         "weather_database")
         .fallbackToDestructiveMigration()
-        .build()*/
+        .build()
 
     @Provides
     @Singleton

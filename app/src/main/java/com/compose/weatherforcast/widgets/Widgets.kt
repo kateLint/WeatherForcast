@@ -21,6 +21,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.compose.weatherforcast.R
@@ -128,17 +129,33 @@ fun HumidityWindPressureRow(weather: WeatherItem,
     }
 }
 
+
 @Composable
-fun SunsetSunRiseRow(weather: WeatherItem){
-    Row (modifier = Modifier
+fun SunsetSunRiseRow(weather: WeatherItem) {
+    Row(modifier = Modifier
         .fillMaxWidth()
         .padding(top = 15.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically){
-        Image(painter = painterResource(id = R.drawable.sunrise)
-            , contentDescription = "sunrise",
-            modifier = Modifier.size(30.dp))
-        Text(text = formatDateTime(weather.sunrise),
-            style = MaterialTheme.typography.bodyMedium)
+        verticalAlignment = Alignment.CenterVertically) {
+        Row {
+            Image(painter = painterResource(id = R.drawable.sunrise),
+                contentDescription = "sunrise",
+                modifier = Modifier.size(30.dp))
+            Text(text = formatDateTime(weather.sunrise),
+                style = MaterialTheme.typography.bodyMedium)
+
+        }
+
+        Row {
+
+            Text(text = formatDateTime(weather.sunset),
+                style = MaterialTheme.typography.bodyMedium)
+            Image(painter = painterResource(id = R.drawable.sunset),
+                contentDescription = "sunset",
+                modifier = Modifier.size(30.dp))
+
+
+        }
+
     }
 }
